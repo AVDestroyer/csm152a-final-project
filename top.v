@@ -20,7 +20,7 @@ module top (clk, btnR, sw, btnL, dp, seg, an, an2, seg2);
     debounce reset_debounce(.clk(clk),.in(btnR),.out(reset_d));
     debounce cashout_debounce(.clk(clk),.in(sw[0]),.out(cashout_d));
     debounce cycle_debounce(.clk(clk),.in(btnL),.out(cycle_d));
-    debounce cycle_pulse(.clk(clk),.in(cycle_d),.out(cycle_p));
+    monostable cycle_pulse(.clk(clk),.in(cycle_d),.out(cycle_p));
     
     parameter playing = 1'b0;
     parameter cashout = 1'b1;
@@ -78,10 +78,10 @@ module top (clk, btnR, sw, btnL, dp, seg, an, an2, seg2);
     end
     
     assign dp = game_state;
-    convert_7seg (.num(current_round),.seg(seg));
+    convert_7seg (.num(current_round),.seg(seg), .invert(0));
     
     anode_cycle anode(.clk(clk), .i1(4'b0001), .i2(4'b0001), .led_output(display_num), .an(an2));
-    convert_7seg convert(.num(display_num),.seg(seg2));
+    convert_7seg convert(.num(display_num),.seg(seg2), .invert(1));
     
     
 endmodule
