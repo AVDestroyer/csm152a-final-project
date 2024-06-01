@@ -1,3 +1,4 @@
+//https://electronics.stackexchange.com/questions/263656/hardware-sources-of-entropy-on-an-fpga
 module garo(clk, rnd);
     input clk;
     output reg [7:0] rnd;

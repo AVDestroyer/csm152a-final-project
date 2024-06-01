@@ -44,6 +44,7 @@ module shuf(clk, rst, card1, card2, card3, card4, card5, card6, card7);
         end
     end
     
+    // https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle
     always @(posedge clk) begin
         for (k = 51; k >= 1; k = k-1) begin
             l = rng_buf[k] % k;
