@@ -14,7 +14,7 @@ module prng(clk, rst, num);
         num <= init_seed;
     end
     
-    always @(posedge clk, posedge rst) begin
+    always @(posedge clk or posedge rst) begin
         if (rst == 1'b1) begin
             num <= init_seed;
         end

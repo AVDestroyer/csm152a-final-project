@@ -67,7 +67,7 @@ module top (clk, btnR, sw, btnL, dp, seg, an, an2, seg2, an3, seg3);
         endcase
     end
     
-    always @(posedge switch_round, posedge reset_d) begin
+    always @(posedge switch_round or posedge reset_d) begin
         if (reset_d == 1'b1)
             next_round = preflop;
         else if (switch_round == 1'b1)
