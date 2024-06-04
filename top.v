@@ -168,7 +168,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                 end else
                                     cur_player = ~cur_player;
                             end
-                        end else if (raise_d) begin
+                        end else if (raise_p) begin
                             if (cur_bet > 0) begin
                                 if (cur_player == p1) begin
                                     p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
@@ -194,6 +194,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                     p2_betted = 5;
                                 end
                             end
+                            cur_player = ~cur_player;
                         end
                     end
                     flop: begin
@@ -232,7 +233,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                 end else
                                     cur_player = ~cur_player;
                             end
-                        end else if (raise_d) begin
+                        end else if (raise_p) begin
                             if (cur_bet > 0) begin
                                 if (cur_player == p1) begin
                                     p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
@@ -258,6 +259,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                     p2_betted = 5;
                                 end
                             end
+                            cur_player = ~cur_player;
                         end
                     end
                     turn: begin
@@ -296,7 +298,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                 end else
                                     cur_player = ~cur_player;
                             end
-                        end else if (raise_d) begin
+                        end else if (raise_p) begin
                             if (cur_bet > 0) begin
                                 if (cur_player == p1) begin
                                     p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
@@ -322,6 +324,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                     p2_betted = 5;
                                 end
                             end
+                            cur_player = ~cur_player;
                         end
                     end
                     river: begin
@@ -366,7 +369,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                 end else
                                     cur_player = ~cur_player;
                             end
-                        end else if (raise_d) begin
+                        end else if (raise_p) begin
                             if (cur_bet > 0) begin
                                 if (cur_player == p1) begin
                                     p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
@@ -392,6 +395,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                     p2_betted = 5;
                                 end
                             end
+                            cur_player = ~cur_player;
                         end
                     end                                
                 endcase
