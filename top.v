@@ -22,6 +22,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     wire raise_d;
     wire raise_p;
     wire freeze_d;
+    wire freeze_ff;
     
     debounce reset_debounce(.clk(clk),.in(btnR),.out(reset_d));
     debounce cashout_debounce(.clk(clk),.in(sw[0]),.out(cashout_d));
@@ -32,12 +33,15 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     debounce raisebet_debounce(.clk(clk),.in(btnC),.out(raise_d));
     monostable raisebet_pulse(.clk(clk),.in(raise_d),.out(raise_p));
     debounce freeze_debounce(.clk(clk),.in(btnD),.out(freeze_d));
+    flipflop freezeff(.clk(clk),.rst(reset_d),.in(freeze_d),.out(freeze_ff));
     
     parameter playing = 2'b00;
     parameter cashout = 2'b01;
     parameter loading = 2'b10;
+    parameter freeze = 2'b11;
     reg [1:0] game_state = loading;
     reg [1:0] next_game_state = loading;
+    reg [1:0] saved_game_state = loading;
     reg [5:0] counter = 6'b000000;
     reg start_game = 0;
     
@@ -92,7 +96,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
             start_game = 1;
     end
     
-    always @(game_state, next_game_state, reset_d, cashout_d, start_game) begin
+    always @(game_state, next_game_state, cashout_d, start_game, freeze_ff) begin
         case (game_state)
             loading: begin
                 if (start_game)
@@ -100,17 +104,31 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
             end
             playing: begin
                 reset_game = 0;
-                if (cashout_d == 1'b1 && next_round == preflop)
+                if (freeze_ff == 1'b1) begin
+                    next_game_state = freeze;
+                    saved_game_state = playing;
+                end
+                else if (cashout_d == 1'b1 && next_round == preflop)
                     next_game_state = cashout;
                 else
                     next_game_state = playing;
             end
             cashout: begin
-                if (cashout_d == 1'b0) begin
+                if (freeze_ff == 1'b1) begin
+                    next_game_state = freeze;
+                    saved_game_state = cashout;
+                end
+                else if (cashout_d == 1'b0) begin
                     next_game_state = playing;
                     reset_game = 1;
                 end else
                     next_game_state = cashout;
+            end
+            freeze: begin
+                if (freeze_ff == 1'b0)
+                    next_game_state = saved_game_state;
+                else
+                    next_game_state = freeze;
             end
         endcase
     end
