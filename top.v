@@ -1,10 +1,9 @@
-module top (clk, btnR, sw, btnL, dp, seg, an, an2, seg2, an3, seg3);
+module top (clk, btnR, sw, btnL, seg, an, an2, seg2, an3, seg3);
     
     input clk;
     input btnR;
     input [0:0] sw;
     input btnL;
-    output wire dp;
     output wire [6:0] seg;
     output reg [3:0] an = 4'b0000;
     
@@ -25,10 +24,12 @@ module top (clk, btnR, sw, btnL, dp, seg, an, an2, seg2, an3, seg3);
     debounce cycle_debounce(.clk(clk),.in(btnL),.out(cycle_d));
     monostable cycle_pulse(.clk(clk),.in(cycle_d),.out(cycle_p));
     
-    parameter playing = 1'b0;
-    parameter cashout = 1'b1;
-    reg game_state = playing;
-    reg next_game_state = playing;
+    parameter playing = 2'b00;
+    parameter cashout = 2'b01;
+    parameter loading = 2'b10;
+    reg [1:0] game_state = loading;
+    reg [1:0] next_game_state = loading;
+    reg [5:0] counter = 6'b000000;
     
     parameter preflop = 3'b0;
     parameter flop = 3'b1;
@@ -49,9 +50,16 @@ module top (clk, btnR, sw, btnL, dp, seg, an, an2, seg2, an3, seg3);
     
     clk_div sec_div(.clk_in(clk),.clk_out(clk_sec),.rst(reset_d),.period(STOPWATCHPERIOD));
     
+    always @(posedge clk) begin
+        counter = counter + 1;
+    end
     
     always @(game_state, next_game_state, reset_d, cashout_d) begin
         case (game_state)
+            loading: begin
+                if (counter >= 53)
+                    next_game_state = playing;
+            end
             playing: begin
                 if (cashout_d == 1'b1 && current_round == tallyup && next_round == preflop)
                     next_game_state = cashout;
@@ -86,7 +94,6 @@ module top (clk, btnR, sw, btnL, dp, seg, an, an2, seg2, an3, seg3);
         end
     end
     
-    assign dp = game_state;
     convert_7seg (.num(current_round),.seg(seg), .invert(0));
     
     anode_cycle anode(.clk(clk), .i1(4'b0001), .i2(4'b0001), .led_output(display_num), .an(an2));
