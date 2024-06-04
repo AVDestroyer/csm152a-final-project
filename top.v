@@ -84,6 +84,8 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     wire [3:0] p1_balance_display;
     wire [3:0] p2_balance_display;
     
+    reg reset_game = 0;
+    
     always @(posedge clk) begin
         counter = counter + 1;
         if (counter >= 53)
@@ -97,30 +99,26 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                     next_game_state = playing;
             end
             playing: begin
+                reset_game = 0;
                 if (cashout_d == 1'b1 && next_round == preflop)
                     next_game_state = cashout;
                 else
                     next_game_state = playing;
-                end
+            end
             cashout: begin
-                if (cashout_d == 1'b0)
+                if (cashout_d == 1'b0) begin
                     next_game_state = playing;
-                else
+                    reset_game = 1;
+                end else
                     next_game_state = cashout;
-                end
+            end
         endcase
-    end
-    
-    always @(posedge reset_d) begin
-        if (reset_d == 1'b1)
-            next_round = preflop;
     end
         
     always @(posedge clk, posedge reset_d) begin
         if (reset_d == 1'b1) begin
             game_state = playing;
             current_round = preflop;
-            
         end
         else begin
             game_state = next_game_state;
@@ -128,279 +126,291 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
         end
     end
     
-    always @(posedge fold_p, posedge call_p, posedge raise_p) begin
-        case (game_state)
-            playing: begin
-                case (current_round)
-                    preflop: begin
-                        if (fold_p) begin
-                            if (cur_player == p1)
-                                p2_balance = p2_balance + pot;
-                            else
-                                p1_balance = p1_balance + pot;
-                            pot = 0;
-                            num_game_rounds = num_game_rounds + 1;
-                            cur_player = (num_game_rounds % 2);
-                            cur_bet = 0;
-                            p1_betted = 0;
-                            p2_betted = 0;
-                            next_round = preflop; 
-                        end else if (call_p) begin
-                            if (cur_bet > 0) begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance - (cur_bet - p1_betted);
-                                    pot = pot + (cur_bet - p1_betted);
-                                    p1_betted = cur_bet;
-                                end else begin
-                                    p2_balance = p2_balance - (cur_bet - p2_betted);
-                                    pot = pot + (cur_bet - p2_betted);
-                                    p2_betted = cur_bet;
-                                end
-                                cur_player = (num_game_rounds % 2);
-                                cur_bet = 0;
-                                p1_betted = 0;
-                                p2_betted = 0;
-                                next_round = flop;
-                            end else begin
-                                if (cur_player == ~(num_game_rounds % 2)) begin
-                                    next_round = flop;
-                                    cur_player = (num_game_rounds % 2);
-                                end else
-                                    cur_player = ~cur_player;
-                            end
-                        end else if (raise_p) begin
-                            if (cur_bet > 0) begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
-                                    pot = pot + (cur_bet - p1_betted) + 5;
-                                    cur_bet = cur_bet + 5;
-                                    p1_betted = cur_bet;
-                                end else begin
-                                    p2_balance = p2_balance -((cur_bet - p2_betted) + 5);
-                                    pot = pot + (cur_bet - p2_betted) + 5;
-                                    cur_bet = cur_bet + 5;
-                                    p2_betted = cur_bet;
-                                end
-                            end else begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance - 5;
-                                    pot = pot + 5;
-                                    cur_bet = 5;
-                                    p1_betted = 5;
-                                end else begin
-                                    p2_balance = p2_balance - 5;
-                                    pot = pot + 5;
-                                    cur_bet = 5;
-                                    p2_betted = 5;
-                                end
-                            end
-                            cur_player = ~cur_player;
-                        end
-                    end
-                    flop: begin
-                        if (fold_p) begin
-                            if (cur_player == p1)
-                                p2_balance = p2_balance + pot;
-                            else
-                                p1_balance = p1_balance + pot;
-                            pot = 0;
-                            num_game_rounds = num_game_rounds + 1;
-                            cur_player = (num_game_rounds % 2);
-                            cur_bet = 0;
-                            p1_betted = 0;
-                            p2_betted = 0;
-                            next_round = preflop; 
-                        end else if (call_p) begin
-                            if (cur_bet > 0) begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance - (cur_bet - p1_betted);
-                                    pot = pot + (cur_bet - p1_betted);
-                                    p1_betted = cur_bet;
-                                end else begin
-                                    p2_balance = p2_balance - (cur_bet - p2_betted);
-                                    pot = pot + (cur_bet - p2_betted);
-                                    p2_betted = cur_bet;
-                                end
-                                cur_player = (num_game_rounds % 2);
-                                cur_bet = 0;
-                                p1_betted = 0;
-                                p2_betted = 0;
-                                next_round = turn;
-                            end else begin
-                                if (cur_player == ~(num_game_rounds % 2)) begin
-                                    next_round = turn;
-                                    cur_player = (num_game_rounds % 2);
-                                end else
-                                    cur_player = ~cur_player;
-                            end
-                        end else if (raise_p) begin
-                            if (cur_bet > 0) begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
-                                    pot = pot + (cur_bet - p1_betted) + 5;
-                                    cur_bet = cur_bet + 5;
-                                    p1_betted = cur_bet;
-                                end else begin
-                                    p2_balance = p2_balance -((cur_bet - p2_betted) + 5);
-                                    pot = pot + (cur_bet - p2_betted) + 5;
-                                    cur_bet = cur_bet + 5;
-                                    p2_betted = cur_bet;
-                                end
-                            end else begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance - 5;
-                                    pot = pot + 5;
-                                    cur_bet = 5;
-                                    p1_betted = 5;
-                                end else begin
-                                    p2_balance = p2_balance - 5;
-                                    pot = pot + 5;
-                                    cur_bet = 5;
-                                    p2_betted = 5;
-                                end
-                            end
-                            cur_player = ~cur_player;
-                        end
-                    end
-                    turn: begin
-                        if (fold_p) begin
-                            if (cur_player == p1)
-                                p2_balance = p2_balance + pot;
-                            else
-                                p1_balance = p1_balance + pot;
-                            pot = 0;
-                            num_game_rounds = num_game_rounds + 1;
-                            cur_player = (num_game_rounds % 2);
-                            cur_bet = 0;
-                            p1_betted = 0;
-                            p2_betted = 0;
-                            next_round = preflop; 
-                        end else if (call_p) begin
-                            if (cur_bet > 0) begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance - (cur_bet - p1_betted);
-                                    pot = pot + (cur_bet - p1_betted);
-                                    p1_betted = cur_bet;
-                                end else begin
-                                    p2_balance = p2_balance - (cur_bet - p2_betted);
-                                    pot = pot + (cur_bet - p2_betted);
-                                    p2_betted = cur_bet;
-                                end
-                                cur_player = (num_game_rounds % 2);
-                                cur_bet = 0;
-                                p1_betted = 0;
-                                p2_betted = 0;
-                                next_round = river;
-                            end else begin
-                                if (cur_player == ~(num_game_rounds % 2)) begin
-                                    next_round = river;
-                                    cur_player = (num_game_rounds % 2);
-                                end else
-                                    cur_player = ~cur_player;
-                            end
-                        end else if (raise_p) begin
-                            if (cur_bet > 0) begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
-                                    pot = pot + (cur_bet - p1_betted) + 5;
-                                    cur_bet = cur_bet + 5;
-                                    p1_betted = cur_bet;
-                                end else begin
-                                    p2_balance = p2_balance -((cur_bet - p2_betted) + 5);
-                                    pot = pot + (cur_bet - p2_betted) + 5;
-                                    cur_bet = cur_bet + 5;
-                                    p2_betted = cur_bet;
-                                end
-                            end else begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance - 5;
-                                    pot = pot + 5;
-                                    cur_bet = 5;
-                                    p1_betted = 5;
-                                end else begin
-                                    p2_balance = p2_balance - 5;
-                                    pot = pot + 5;
-                                    cur_bet = 5;
-                                    p2_betted = 5;
-                                end
-                            end
-                            cur_player = ~cur_player;
-                        end
-                    end
-                    river: begin
-                        if (fold_p) begin
-                            if (cur_player == p1)
-                                p2_balance = p2_balance + pot;
-                            else
-                                p1_balance = p1_balance + pot;
-                            pot = 0;
-                            num_game_rounds = num_game_rounds + 1;
-                            cur_player = (num_game_rounds % 2);
-                            cur_bet = 0;
-                            p1_betted = 0;
-                            p2_betted = 0;
-                            next_round = preflop; 
-                        end else if (call_p) begin
-                            if (cur_bet > 0) begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance - (cur_bet - p1_betted);
-                                    pot = pot + (cur_bet - p1_betted);
-                                    p1_betted = cur_bet;
-                                end else begin
-                                    p2_balance = p2_balance - (cur_bet - p2_betted);
-                                    pot = pot + (cur_bet - p2_betted);
-                                    p2_betted = cur_bet;
-                                end
-                                p1_balance = p1_balance + pot;
+    always @(posedge fold_p, posedge call_p, posedge raise_p, posedge reset_d, posedge reset_game) begin
+        if (reset_d || reset_game) begin
+            p1_balance = 49;
+            p2_balance = 49;
+            num_game_rounds = 0;
+            cur_bet = 0;
+            pot = 0;
+            p1_betted = 0;
+            p2_betted = 0;
+            next_round = preflop;
+            cur_player = p1;
+        end else begin
+            case (game_state)
+                playing: begin
+                    case (current_round)
+                        preflop: begin
+                            if (fold_p) begin
+                                if (cur_player == p1)
+                                    p2_balance = p2_balance + pot;
+                                else
+                                    p1_balance = p1_balance + pot;
                                 pot = 0;
                                 num_game_rounds = num_game_rounds + 1;
                                 cur_player = (num_game_rounds % 2);
                                 cur_bet = 0;
                                 p1_betted = 0;
                                 p2_betted = 0;
-                                next_round = preflop;
-                            end else begin
-                                if (cur_player == ~(num_game_rounds % 2)) begin
+                                next_round = preflop; 
+                            end else if (call_p) begin
+                                if (cur_bet > 0) begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance - (cur_bet - p1_betted);
+                                        pot = pot + (cur_bet - p1_betted);
+                                        p1_betted = cur_bet;
+                                    end else begin
+                                        p2_balance = p2_balance - (cur_bet - p2_betted);
+                                        pot = pot + (cur_bet - p2_betted);
+                                        p2_betted = cur_bet;
+                                    end
+                                    cur_player = (num_game_rounds % 2);
+                                    cur_bet = 0;
+                                    p1_betted = 0;
+                                    p2_betted = 0;
+                                    next_round = flop;
+                                end else begin
+                                    if (cur_player == ~(num_game_rounds % 2)) begin
+                                        next_round = flop;
+                                        cur_player = (num_game_rounds % 2);
+                                    end else
+                                        cur_player = ~cur_player;
+                                end
+                            end else if (raise_p) begin
+                                if (cur_bet > 0) begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
+                                        pot = pot + (cur_bet - p1_betted) + 5;
+                                        cur_bet = cur_bet + 5;
+                                        p1_betted = cur_bet;
+                                    end else begin
+                                        p2_balance = p2_balance -((cur_bet - p2_betted) + 5);
+                                        pot = pot + (cur_bet - p2_betted) + 5;
+                                        cur_bet = cur_bet + 5;
+                                        p2_betted = cur_bet;
+                                    end
+                                end else begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance - 5;
+                                        pot = pot + 5;
+                                        cur_bet = 5;
+                                        p1_betted = 5;
+                                    end else begin
+                                        p2_balance = p2_balance - 5;
+                                        pot = pot + 5;
+                                        cur_bet = 5;
+                                        p2_betted = 5;
+                                    end
+                                end
+                                cur_player = ~cur_player;
+                            end
+                        end
+                        flop: begin
+                            if (fold_p) begin
+                                if (cur_player == p1)
+                                    p2_balance = p2_balance + pot;
+                                else
+                                    p1_balance = p1_balance + pot;
+                                pot = 0;
+                                num_game_rounds = num_game_rounds + 1;
+                                cur_player = (num_game_rounds % 2);
+                                cur_bet = 0;
+                                p1_betted = 0;
+                                p2_betted = 0;
+                                next_round = preflop; 
+                            end else if (call_p) begin
+                                if (cur_bet > 0) begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance - (cur_bet - p1_betted);
+                                        pot = pot + (cur_bet - p1_betted);
+                                        p1_betted = cur_bet;
+                                    end else begin
+                                        p2_balance = p2_balance - (cur_bet - p2_betted);
+                                        pot = pot + (cur_bet - p2_betted);
+                                        p2_betted = cur_bet;
+                                    end
+                                    cur_player = (num_game_rounds % 2);
+                                    cur_bet = 0;
+                                    p1_betted = 0;
+                                    p2_betted = 0;
+                                    next_round = turn;
+                                end else begin
+                                    if (cur_player == ~(num_game_rounds % 2)) begin
+                                        next_round = turn;
+                                        cur_player = (num_game_rounds % 2);
+                                    end else
+                                        cur_player = ~cur_player;
+                                end
+                            end else if (raise_p) begin
+                                if (cur_bet > 0) begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
+                                        pot = pot + (cur_bet - p1_betted) + 5;
+                                        cur_bet = cur_bet + 5;
+                                        p1_betted = cur_bet;
+                                    end else begin
+                                        p2_balance = p2_balance -((cur_bet - p2_betted) + 5);
+                                        pot = pot + (cur_bet - p2_betted) + 5;
+                                        cur_bet = cur_bet + 5;
+                                        p2_betted = cur_bet;
+                                    end
+                                end else begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance - 5;
+                                        pot = pot + 5;
+                                        cur_bet = 5;
+                                        p1_betted = 5;
+                                    end else begin
+                                        p2_balance = p2_balance - 5;
+                                        pot = pot + 5;
+                                        cur_bet = 5;
+                                        p2_betted = 5;
+                                    end
+                                end
+                                cur_player = ~cur_player;
+                            end
+                        end
+                        turn: begin
+                            if (fold_p) begin
+                                if (cur_player == p1)
+                                    p2_balance = p2_balance + pot;
+                                else
+                                    p1_balance = p1_balance + pot;
+                                pot = 0;
+                                num_game_rounds = num_game_rounds + 1;
+                                cur_player = (num_game_rounds % 2);
+                                cur_bet = 0;
+                                p1_betted = 0;
+                                p2_betted = 0;
+                                next_round = preflop; 
+                            end else if (call_p) begin
+                                if (cur_bet > 0) begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance - (cur_bet - p1_betted);
+                                        pot = pot + (cur_bet - p1_betted);
+                                        p1_betted = cur_bet;
+                                    end else begin
+                                        p2_balance = p2_balance - (cur_bet - p2_betted);
+                                        pot = pot + (cur_bet - p2_betted);
+                                        p2_betted = cur_bet;
+                                    end
+                                    cur_player = (num_game_rounds % 2);
+                                    cur_bet = 0;
+                                    p1_betted = 0;
+                                    p2_betted = 0;
+                                    next_round = river;
+                                end else begin
+                                    if (cur_player == ~(num_game_rounds % 2)) begin
+                                        next_round = river;
+                                        cur_player = (num_game_rounds % 2);
+                                    end else
+                                        cur_player = ~cur_player;
+                                end
+                            end else if (raise_p) begin
+                                if (cur_bet > 0) begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
+                                        pot = pot + (cur_bet - p1_betted) + 5;
+                                        cur_bet = cur_bet + 5;
+                                        p1_betted = cur_bet;
+                                    end else begin
+                                        p2_balance = p2_balance -((cur_bet - p2_betted) + 5);
+                                        pot = pot + (cur_bet - p2_betted) + 5;
+                                        cur_bet = cur_bet + 5;
+                                        p2_betted = cur_bet;
+                                    end
+                                end else begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance - 5;
+                                        pot = pot + 5;
+                                        cur_bet = 5;
+                                        p1_betted = 5;
+                                    end else begin
+                                        p2_balance = p2_balance - 5;
+                                        pot = pot + 5;
+                                        cur_bet = 5;
+                                        p2_betted = 5;
+                                    end
+                                end
+                                cur_player = ~cur_player;
+                            end
+                        end
+                        river: begin
+                            if (fold_p) begin
+                                if (cur_player == p1)
+                                    p2_balance = p2_balance + pot;
+                                else
+                                    p1_balance = p1_balance + pot;
+                                pot = 0;
+                                num_game_rounds = num_game_rounds + 1;
+                                cur_player = (num_game_rounds % 2);
+                                cur_bet = 0;
+                                p1_betted = 0;
+                                p2_betted = 0;
+                                next_round = preflop; 
+                            end else if (call_p) begin
+                                if (cur_bet > 0) begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance - (cur_bet - p1_betted);
+                                        pot = pot + (cur_bet - p1_betted);
+                                        p1_betted = cur_bet;
+                                    end else begin
+                                        p2_balance = p2_balance - (cur_bet - p2_betted);
+                                        pot = pot + (cur_bet - p2_betted);
+                                        p2_betted = cur_bet;
+                                    end
                                     p1_balance = p1_balance + pot;
                                     pot = 0;
                                     num_game_rounds = num_game_rounds + 1;
                                     cur_player = (num_game_rounds % 2);
+                                    cur_bet = 0;
+                                    p1_betted = 0;
+                                    p2_betted = 0;
                                     next_round = preflop;
-                                end else
-                                    cur_player = ~cur_player;
-                            end
-                        end else if (raise_p) begin
-                            if (cur_bet > 0) begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
-                                    pot = pot + (cur_bet - p1_betted) + 5;
-                                    cur_bet = cur_bet + 5;
-                                    p1_betted = cur_bet;
                                 end else begin
-                                    p2_balance = p2_balance -((cur_bet - p2_betted) + 5);
-                                    pot = pot + (cur_bet - p2_betted) + 5;
-                                    cur_bet = cur_bet + 5;
-                                    p2_betted = cur_bet;
+                                    if (cur_player == ~(num_game_rounds % 2)) begin
+                                        p1_balance = p1_balance + pot;
+                                        pot = 0;
+                                        num_game_rounds = num_game_rounds + 1;
+                                        cur_player = (num_game_rounds % 2);
+                                        next_round = preflop;
+                                    end else
+                                        cur_player = ~cur_player;
                                 end
-                            end else begin
-                                if (cur_player == p1) begin
-                                    p1_balance = p1_balance - 5;
-                                    pot = pot + 5;
-                                    cur_bet = 5;
-                                    p1_betted = 5;
+                            end else if (raise_p) begin
+                                if (cur_bet > 0) begin
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
+                                        pot = pot + (cur_bet - p1_betted) + 5;
+                                        cur_bet = cur_bet + 5;
+                                        p1_betted = cur_bet;
+                                    end else begin
+                                        p2_balance = p2_balance -((cur_bet - p2_betted) + 5);
+                                        pot = pot + (cur_bet - p2_betted) + 5;
+                                        cur_bet = cur_bet + 5;
+                                        p2_betted = cur_bet;
+                                    end
                                 end else begin
-                                    p2_balance = p2_balance - 5;
-                                    pot = pot + 5;
-                                    cur_bet = 5;
-                                    p2_betted = 5;
+                                    if (cur_player == p1) begin
+                                        p1_balance = p1_balance - 5;
+                                        pot = pot + 5;
+                                        cur_bet = 5;
+                                        p1_betted = 5;
+                                    end else begin
+                                        p2_balance = p2_balance - 5;
+                                        pot = pot + 5;
+                                        cur_bet = 5;
+                                        p2_betted = 5;
+                                    end
                                 end
+                                cur_player = ~cur_player;
                             end
-                            cur_player = ~cur_player;
-                        end
-                    end                                
-                endcase
-            end
-         endcase
+                        end                                
+                    endcase
+                end
+             endcase
+         end
      end
                 
     anode_cycle_main large_an_cycle(.clk(clk),.reset(reset_d),.i1(4'b0000), .i2(4'b0000), .i3(potdig2), .i4(potdig1), .led_output(pot_display),.an(an));
