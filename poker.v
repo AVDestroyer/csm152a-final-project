@@ -36,30 +36,30 @@ module poker(a1, a2, a3, a4, a5, b1, b2, b3, b4, b5, win, tie);
     output [0:0] win;
     output [0:0] tie;
     
-    assign card1 = a1/13;
-    assign card2 = a2/13;
-    assign card3 = a3/13;
-    assign card4 = a4/13;
-    assign card5 = a5/13;
+    assign card1 = a1 % 13;
+    assign card2 = a2 % 13;
+    assign card3 = a3 % 13;
+    assign card4 = a4 % 13;
+    assign card5 = a5 % 13;
     
-    assign suit1 = a1 % 13;
-    assign suit2 = a2 % 13;
-    assign suit3 = a3 % 13;
-    assign suit4 = a4 % 13;
-    assign suit5 = a5 % 13;
+    assign suit1 = a1 / 13;
+    assign suit2 = a2 / 13;
+    assign suit3 = a3 / 13;
+    assign suit4 = a4 / 13;
+    assign suit5 = a5 / 13;
     
-    assign card6 = b1/13;
-    assign card7 = b2/13;
-    assign card8 = b3/13;
-    assign card9 = b4/13;
-    assign card10 = b5/13;
+    assign card6 = b1 % 13;
+    assign card7 = b2 % 13;
+    assign card8 = b3 % 13;
+    assign card9 = b4 % 13;
+    assign card10 = b5 % 13;
     
-    assign suit6 = b1 % 13;
-    assign suit7 = b2 % 13;
-    assign suit8 = b3 % 13;
-    assign suit9 = b4 % 13;
-    assign suit10 = b5 % 13;
-    
+    assign suit6 = b1 / 13;
+    assign suit7 = b2 / 13;
+    assign suit8 = b3 / 13;
+    assign suit9 = b4 / 13;
+    assign suit10 = b5 / 13;
+
     hand player1 (.card1(card1), .suit1(suit1), .card2(card2), .suit2(suit2), 
                  .card3(card3), .suit3(suit3), .card4(card4), .suit4(suit4),
                   .card5(card5), .suit5(suit5), .score(score1));
