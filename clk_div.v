@@ -5,7 +5,7 @@
 
 module clk_div(clk_in,clk_out,rst,period);
     input clk_in;
-    output reg clk_out;
+    output reg clk_out = 1;
 	input rst;
     input [31:0] period;
     reg[31:0] counter = 32'd0;

@@ -12,8 +12,6 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     output wire [6:0] seg2;
     output wire [0:0] an3;
     output wire [6:0] seg3;
-    wire [3:0] display_num;
-    wire [3:0] display_num2;
     
     wire reset_d;
     wire cashout_d;
@@ -24,7 +22,6 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     wire raise_d;
     wire raise_p;
     wire freeze_d;
-    wire freeze_p;
     
     debounce reset_debounce(.clk(clk),.in(btnR),.out(reset_d));
     debounce cashout_debounce(.clk(clk),.in(sw[0]),.out(cashout_d));
@@ -42,6 +39,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     reg [1:0] game_state = loading;
     reg [1:0] next_game_state = loading;
     reg [5:0] counter = 6'b000000;
+    reg start_game = 0;
     
     parameter preflop = 3'b0;
     parameter flop = 3'b1;
@@ -51,8 +49,8 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     reg [2:0] current_round = preflop;
     reg [2:0] next_round = preflop;
         
-    wire [3:0] rngout;
-    reg [3:0] random_num;
+    wire [7:0] rngout;
+    reg [7:0] random_num;
     
     wire clk_sec;
     parameter integer STOPWATCHPERIOD = 114913817;
@@ -82,18 +80,20 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     reg [6:0] p1_betted = 0;
     reg [6:0] p2_betted = 0;
     
-    wire pot_display;
-    wire p1_balance_display;
-    wire p2_balance_display;
+    wire [3:0] pot_display;
+    wire [3:0] p1_balance_display;
+    wire [3:0] p2_balance_display;
     
     always @(posedge clk) begin
         counter = counter + 1;
+        if (counter >= 53)
+            start_game = 1;
     end
     
-    always @(game_state, next_game_state, reset_d, cashout_d) begin
+    always @(game_state, next_game_state, reset_d, cashout_d, start_game) begin
         case (game_state)
             loading: begin
-                if (counter >= 53)
+                if (start_game)
                     next_game_state = playing;
             end
             playing: begin

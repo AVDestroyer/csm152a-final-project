@@ -8,7 +8,7 @@ module prng(clk, rst, num);
     parameter a = 233;
     parameter c = 197;
     
-    garo(.clk(clk),.rnd(init_seed));
+    garo garo(.clk(clk),.rnd(init_seed));
     
     initial begin
         num <= init_seed;

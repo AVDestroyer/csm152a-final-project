@@ -11,7 +11,7 @@ module anode_cycle_p(clk, reset, i1,i2, led_output, an);
 	
     wire clk_dv;
 	
-	parameter integer PERIOD = 100000;
+	parameter integer PERIOD = 1000000;
 	
 	reg[0:0] counter = 0;
 	
@@ -22,9 +22,9 @@ module anode_cycle_p(clk, reset, i1,i2, led_output, an);
         begin
             if (reset)
                 begin
-                    led_output <= 4'd0;
-                    an <= 4'b0000;
-                    counter <= 2'b00;
+                    led_output <= 0;
+                    an <= 0;
+                    counter <= 0;
             end else begin
                 counter = counter + 1;
                 case (counter)

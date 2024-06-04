@@ -8,14 +8,13 @@ module anode_cycle_main(clk, reset, i1,i2,i3,i4, led_output, an);
     input [3:0] i4;
 	
     output reg [3:0] led_output;
-    output reg [3:0] an;
+    output reg [3:0] an = 0;
     
-	
     wire clk_dv;
 	
-	parameter integer PERIOD = 100000;
+	parameter integer PERIOD = 1000000;
 	
-	reg[1:0] counter;
+	reg[1:0] counter = 0;
 	
 	clk_div div(.clk_in(clk),.clk_out(clk_dv),.rst(reset),.period(PERIOD));
     
@@ -24,9 +23,9 @@ module anode_cycle_main(clk, reset, i1,i2,i3,i4, led_output, an);
         begin
             if (reset)
                 begin
-                    led_output <= 4'd0;
-                    an <= 4'b0000;
-                    counter <= 2'b00;
+                    led_output <= 0;
+                    an <= 0;
+                    counter <= 0;
                 end
             else begin
                 counter = counter + 1;
