@@ -16,7 +16,7 @@ module monostable(clk, in, out);
         end else begin
             out <= 0;
         end
-        prev = in;
+        prev <= in;
     end    
     
 endmodule

@@ -3,7 +3,7 @@ module flipflop(clk, rst, in, out);
     input clk;
     input rst;
     input in;
-    output reg out;
+    output reg out = 0;
     
     always @(posedge in or posedge rst) begin
         if (rst) begin

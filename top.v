@@ -1,4 +1,4 @@
-module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3);
+module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3);
     input clk;
     input btnR;
     input [0:0] sw;
@@ -8,10 +8,10 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     input btnD;
     output wire [6:0] seg;
     output wire [3:0] an;
-    output wire [0:0] an2;
     output wire [6:0] seg2;
-    output wire [0:0] an3;
+    output wire [0:0] an2;
     output wire [6:0] seg3;
+    output wire [0:0] an3;
     
     wire reset_d;
     wire cashout_d;
@@ -34,6 +34,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     monostable raisebet_pulse(.clk(clk),.in(raise_d),.out(raise_p));
     debounce freeze_debounce(.clk(clk),.in(btnD),.out(freeze_d));
     flipflop freezeff(.clk(clk),.rst(reset_d),.in(freeze_d),.out(freeze_ff));
+
     
     parameter playing = 2'b00;
     parameter cashout = 2'b01;
@@ -41,7 +42,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     parameter freeze = 2'b11;
     reg [1:0] game_state = loading;
     reg [1:0] next_game_state = loading;
-    reg [1:0] saved_game_state = loading;
+    reg [1:0] saved_game_state = playing;
     reg [5:0] counter = 6'b000000;
     reg start_game = 0;
     
@@ -65,6 +66,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
     parameter p1 = 0;
     parameter p2 = 1;
     reg [7:0] num_game_rounds = 0;
+    wire start_player = num_game_rounds % 2;
     reg [6:0] p1_balance = 49;
     reg [6:0] p2_balance = 49;
     wire [3:0] p1_balanced1;
@@ -96,7 +98,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
             start_game = 1;
     end
     
-    always @(game_state, next_game_state, cashout_d, start_game, freeze_ff) begin
+    always @(posedge clk) begin
         case (game_state)
             loading: begin
                 if (start_game)
@@ -143,18 +145,18 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
             current_round = next_round;
         end
     end
-    
-    always @(posedge fold_p, posedge call_p, posedge raise_p, posedge reset_d, posedge reset_game) begin
+        
+    always @(posedge clk) begin
         if (reset_d || reset_game) begin
-            p1_balance = 49;
-            p2_balance = 49;
-            num_game_rounds = 0;
-            cur_bet = 0;
-            pot = 0;
-            p1_betted = 0;
-            p2_betted = 0;
-            next_round = preflop;
-            cur_player = p1;
+            p1_balance <= 49;
+            p2_balance <= 49;
+            num_game_rounds <= 0;
+            cur_bet <= 0;
+            pot <= 0;
+            p1_betted <= 0;
+            p2_betted <= 0;
+            next_round <= preflop;
+            cur_player <= p1;
         end else begin
             case (game_state)
                 playing: begin
@@ -166,8 +168,8 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                 else
                                     p1_balance = p1_balance + pot;
                                 pot = 0;
+                                cur_player = ~start_player;
                                 num_game_rounds = num_game_rounds + 1;
-                                cur_player = (num_game_rounds % 2);
                                 cur_bet = 0;
                                 p1_betted = 0;
                                 p2_betted = 0;
@@ -183,15 +185,15 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                         pot = pot + (cur_bet - p2_betted);
                                         p2_betted = cur_bet;
                                     end
-                                    cur_player = (num_game_rounds % 2);
+                                    cur_player = start_player;
                                     cur_bet = 0;
                                     p1_betted = 0;
                                     p2_betted = 0;
                                     next_round = flop;
                                 end else begin
-                                    if (cur_player == ~(num_game_rounds % 2)) begin
+                                    if (cur_player == ~start_player) begin
                                         next_round = flop;
-                                        cur_player = (num_game_rounds % 2);
+                                        cur_player = start_player;
                                     end else
                                         cur_player = ~cur_player;
                                 end
@@ -231,8 +233,8 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                 else
                                     p1_balance = p1_balance + pot;
                                 pot = 0;
+                                cur_player = ~start_player;
                                 num_game_rounds = num_game_rounds + 1;
-                                cur_player = (num_game_rounds % 2);
                                 cur_bet = 0;
                                 p1_betted = 0;
                                 p2_betted = 0;
@@ -248,15 +250,15 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                         pot = pot + (cur_bet - p2_betted);
                                         p2_betted = cur_bet;
                                     end
-                                    cur_player = (num_game_rounds % 2);
+                                    cur_player = start_player;
                                     cur_bet = 0;
                                     p1_betted = 0;
                                     p2_betted = 0;
                                     next_round = turn;
                                 end else begin
-                                    if (cur_player == ~(num_game_rounds % 2)) begin
+                                    if (cur_player == ~start_player) begin
                                         next_round = turn;
-                                        cur_player = (num_game_rounds % 2);
+                                        cur_player = start_player;
                                     end else
                                         cur_player = ~cur_player;
                                 end
@@ -296,8 +298,8 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                 else
                                     p1_balance = p1_balance + pot;
                                 pot = 0;
+                                cur_player = ~start_player;
                                 num_game_rounds = num_game_rounds + 1;
-                                cur_player = (num_game_rounds % 2);
                                 cur_bet = 0;
                                 p1_betted = 0;
                                 p2_betted = 0;
@@ -313,15 +315,15 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                         pot = pot + (cur_bet - p2_betted);
                                         p2_betted = cur_bet;
                                     end
-                                    cur_player = (num_game_rounds % 2);
+                                    cur_player = start_player;
                                     cur_bet = 0;
                                     p1_betted = 0;
                                     p2_betted = 0;
                                     next_round = river;
                                 end else begin
-                                    if (cur_player == ~(num_game_rounds % 2)) begin
+                                    if (cur_player == ~start_player) begin
                                         next_round = river;
-                                        cur_player = (num_game_rounds % 2);
+                                        cur_player = start_player;
                                     end else
                                         cur_player = ~cur_player;
                                 end
@@ -361,8 +363,8 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                 else
                                     p1_balance = p1_balance + pot;
                                 pot = 0;
+                                cur_player = ~start_player;
                                 num_game_rounds = num_game_rounds + 1;
-                                cur_player = (num_game_rounds % 2);
                                 cur_bet = 0;
                                 p1_betted = 0;
                                 p2_betted = 0;
@@ -381,17 +383,17 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
                                     p1_balance = p1_balance + pot;
                                     pot = 0;
                                     num_game_rounds = num_game_rounds + 1;
-                                    cur_player = (num_game_rounds % 2);
+                                    cur_player = start_player;
                                     cur_bet = 0;
                                     p1_betted = 0;
                                     p2_betted = 0;
                                     next_round = preflop;
                                 end else begin
-                                    if (cur_player == ~(num_game_rounds % 2)) begin
+                                    if (cur_player == ~start_player) begin
                                         p1_balance = p1_balance + pot;
                                         pot = 0;
                                         num_game_rounds = num_game_rounds + 1;
-                                        cur_player = (num_game_rounds % 2);
+                                        cur_player = start_player;
                                         next_round = preflop;
                                     end else
                                         cur_player = ~cur_player;
@@ -431,7 +433,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, an2, seg2, an3, seg3
          end
      end
                 
-    anode_cycle_main large_an_cycle(.clk(clk),.reset(reset_d),.i1(4'b0000), .i2(4'b0000), .i3(potdig2), .i4(potdig1), .led_output(pot_display),.an(an));
+    anode_cycle_main large_an_cycle(.clk(clk),.reset(reset_d),.i1(current_round), .i2(cur_player), .i3(potdig2), .i4(potdig1), .led_output(pot_display),.an(an));
     convert_7seg convert_pot(.num(pot_display),.seg(seg), .invert(0));
     anode_cycle_p an_cycle_p1(.clk(clk),.reset(reset_d),.i1(p1_balanced1), .i2(p1_balanced2), .led_output(p1_balance_display),.an(an2));
     convert_7seg convert_p1(.num(p1_balance_display),.seg(seg2), .invert(1));

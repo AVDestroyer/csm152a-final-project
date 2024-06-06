@@ -11,7 +11,7 @@ module anode_cycle_p(clk, reset, i1,i2, led_output, an);
 	
     wire clk_dv;
 	
-	parameter integer PERIOD = 1000000;
+	parameter integer PERIOD = 100000;
 	
 	reg[0:0] counter = 0;
 	
