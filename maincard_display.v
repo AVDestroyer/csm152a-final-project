@@ -1,3 +1,7 @@
+// cycles through cards on the table, creating the "digits" needed to represent them on the 7-segment display
+// displayed digits change every second
+// each card needs 4 digits (2 for number, 2 for suit), so we display 1 card at a time on the main 7-segment display
+// number of cards cycled through depends on round (flop, turn, river)
 module maincard_display(clk, rst, num, card1, card2, card3, outdig1, outdig2, outdig3, outdig4);
     input clk;
     input rst;

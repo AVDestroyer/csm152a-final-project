@@ -1,3 +1,4 @@
+// anode cycling for peripheral 7-segment display (there are only 2 digits)
 module anode_cycle_p(clk, reset, i1,i2, led_output, an);
     input clk;
     input reset;

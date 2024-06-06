@@ -29,6 +29,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     wire [0:0] win;
     wire [0:0] tie;
 
+    // creating debounced and pulsed signals for buttons and switches
     debounce reset_debounce(.clk(clk),.in(btnR),.out(reset_d));
     debounce cashout_debounce(.clk(clk),.in(sw[0]),.out(cashout_d));
     debounce fold_debounce(.clk(clk),.in(btnU),.out(fold_d));
@@ -43,6 +44,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     debounce p1cards_debounce(.clk(clk),.in(sw[2]),.out(p1cards_d));
     debounce p2cards_debounce(.clk(clk),.in(sw[3]),.out(p2cards_d));
     
+    // game states
     parameter playing = 2'b00;
     parameter cashout = 2'b01;
     parameter loading = 2'b10;
@@ -53,6 +55,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     reg [5:0] counter = 6'b000000;
     reg start_game = 0;
     
+    // round states
     parameter preflop = 3'b0;
     parameter flop = 3'b1;
     parameter turn = 3'b10;
@@ -60,6 +63,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     reg [1:0] current_round = preflop;
     reg [1:0] next_round = preflop;
     
+    // poker money and betting logic registers
     reg cur_player = 0;
     parameter p1 = 0;
     parameter p2 = 1;
@@ -84,12 +88,15 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     reg [6:0] p1_betted = 0;
     reg [6:0] p2_betted = 0;
     
+    // numbers that are currently displayed on 7-segment displays
     wire [4:0] main_display;
     wire [4:0] p1_display;
     wire [4:0] p2_display;
     
+    // used after cashing out
     reg reset_game = 0;
     
+    // wires for cards, these change on every clock cycle
     wire [5:0] c1;
     wire [5:0] c2;
     wire [5:0] c3;
@@ -97,6 +104,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     wire [5:0] c5;
     wire [5:0] c6;
     wire [5:0] c7;
+    // registers for cards, these are set when players "draw cards", based on the values of the previous wires
     reg [5:0] card1 = 0;
     reg [5:0] card2 = 0;
     reg [5:0] card3 = 0;
@@ -108,6 +116,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     shuffle shuf_cards(.clk(clk), .rst(reset_d), .card1(c1), .card2(c2), .card3(c3), .card4(c4), .card5(c5), .card6(c6), .card7(c7));
     poker game (.a1(card1), .a2(card2), .a3(card3), .a4(card4), .a5(card5), .b1(card1), .b2(card2), .b3(card3), .b4(card6), .b5(card7), .win(win), .tie(tie));
     
+    // displayed digits for cards on main and peripheral 7-segment displays
     wire [4:0] carddisplay_1;
     wire [4:0] carddisplay_2;
     wire [4:0] carddisplay_3;
@@ -117,6 +126,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     wire [4:0] p2card_1;
     wire [4:0] p2card_2;   
     
+    // the *actual* displayed digits on main and peripheral 7-segment displays
     reg [4:0] maindisplay_1 = 0;
     reg [4:0] maindisplay_2 = 0;
     reg [4:0] maindisplay_3 = 0;
@@ -126,15 +136,18 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     reg [4:0] p2display_1 = 0;
     reg [4:0] p2display_2 = 0;
     
+    // whether player 1 and 2 have already drawn their cards
     reg p1_drawcards = 0;
     reg p2_drawcards = 0;
     
+    // we need to wait a little before starting the game to fill our rng buffer
     always @(posedge clk) begin
         counter = counter + 1;
-        if (counter >= 53)
+        if (counter >= 7)
             start_game = 1;
     end
     
+    // game state logic
     always @(posedge clk) begin
         case (game_state)
             loading: begin
@@ -148,6 +161,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                     saved_game_state = playing;
                 end
                 else if (cashout_d == 1'b1 && next_round == preflop)
+                    // we only cashout if we are at the end of a round
                     next_game_state = cashout;
                 else
                     next_game_state = playing;
@@ -159,6 +173,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                 end
                 else if (cashout_d == 1'b0) begin
                     next_game_state = playing;
+                    // after cashing out we reset the game
                     reset_game = 1;
                 end else
                     next_game_state = cashout;
@@ -172,6 +187,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
         endcase
     end
         
+    // game state and round state transitions    
     always @(posedge clk, posedge reset_d) begin
         if (reset_d == 1'b1) begin
             game_state = playing;
@@ -179,6 +195,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
         end
         else begin
             game_state = next_game_state;
+            // draw table cards if we reach the flop
             if (current_round == preflop && next_round == flop) begin
                 card1 = c1;
                 card2 = c2;
@@ -187,8 +204,10 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
             current_round = next_round;
         end
     end
-        
+    
+    // poker game logic and round state logic
     always @(posedge clk) begin
+        // reset
         if (reset_d || reset_game) begin
             p1_balance <= 49;
             p2_balance <= 49;
@@ -203,12 +222,16 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
             case (game_state)
                 playing: begin
                     case (current_round)
+                        // all betting rounds use similar logic, I will only comment on preflop and river
                         preflop: begin
+                            // fold
                             if (fold_p) begin
+                                //give pot to player that didn't fold
                                 if (cur_player == p1)
                                     p2_balance = p2_balance + pot;
                                 else
                                     p1_balance = p1_balance + pot;
+                                // move to the next game round
                                 pot = 0;
                                 cur_player = ~start_player;
                                 num_game_rounds = num_game_rounds + 1;
@@ -218,10 +241,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 next_round = preflop; 
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
+                                // call
                                     if (cur_player == p1 && p1_balance < (cur_bet-p1_betted)) begin
-                                        // do nothing
+                                        // do nothing - p1 doesn't have enough money
                                     end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted)) begin
-                                        // do nothing
+                                        // do nothing - p2 doesn't have enough money
                                     end else begin 
                                         if (cur_player == p1) begin                                        
                                             p1_balance = p1_balance - (cur_bet - p1_betted);
@@ -232,6 +256,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                             pot = pot + (cur_bet - p2_betted);
                                             p2_betted = cur_bet;
                                         end
+                                        // move to the next betting round since this is 2-player
                                         cur_player = start_player;
                                         cur_bet = 0;
                                         p1_betted = 0;
@@ -239,7 +264,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                         next_round = flop;
                                     end
                                 end else begin
+                                // check
                                     if (cur_player == ~start_player) begin
+                                        // move to the next betting round (both players have checked)
                                         next_round = flop;
                                         cur_player = start_player;
                                     end else
@@ -247,11 +274,13 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 end
                             end else if (raise_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1 && p1_balance < (cur_bet-p1_betted)) begin
-                                        
-                                    end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted)) begin
-                                    
-                                    end else if (cur_player == p1) begin                                        p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
+                                    // raise
+                                    if (cur_player == p1 && p1_balance < (cur_bet-p1_betted + 5)) begin
+                                        // do nothing - p1 doesn't have enough money
+                                    end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted + 5)) begin
+                                        // do nothing - p2 doesn't have enough money
+                                    end else if (cur_player == p1) begin
+                                        p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
                                         pot = pot + (cur_bet - p1_betted) + 5;
                                         cur_bet = cur_bet + 5;
                                         p1_betted = cur_bet;
@@ -262,11 +291,13 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                         p2_betted = cur_bet;
                                     end
                                 end else begin
+                                    // bet 5
                                     if (cur_player == p1 && p1_balance < 5) begin
-                                    
+                                        // do nothing - p1 doesn't have enough money
                                     end else if (cur_player == p2 && p2_balance < 5) begin
-                                
-                                    end else if (cur_player == p1) begin                                          p1_balance = p1_balance - 5;
+                                        // do nothing - p2 doesn't have enough money
+                                    end else if (cur_player == p1) begin
+                                        p1_balance = p1_balance - 5;
                                         pot = pot + 5;
                                         cur_bet = 5;
                                         p1_betted = 5;
@@ -296,9 +327,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
                                     if (cur_player == p1 && p1_balance < (cur_bet-p1_betted)) begin
-                                        // do nothing
+                                        
                                     end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted)) begin
-                                        // do nothing
+                                        
                                     end else begin 
                                         if (cur_player == p1) begin                                        
                                             p1_balance = p1_balance - (cur_bet - p1_betted);
@@ -324,9 +355,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 end
                             end else if (raise_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1 && p1_balance < (cur_bet-p1_betted)) begin
+                                    if (cur_player == p1 && p1_balance < (cur_bet-p1_betted + 5)) begin
                                         
-                                    end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted)) begin
+                                    end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted + 5)) begin
                                     
                                     end else if (cur_player == p1) begin
                                         p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
@@ -375,9 +406,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
                                     if (cur_player == p1 && p1_balance < (cur_bet-p1_betted)) begin
-                                        // do nothing
+                                        
                                     end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted)) begin
-                                        // do nothing
+                                        
                                     end else begin 
                                         if (cur_player == p1) begin                                        
                                             p1_balance = p1_balance - (cur_bet - p1_betted);
@@ -403,9 +434,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 end
                             end else if (raise_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1 && p1_balance < (cur_bet-p1_betted)) begin
+                                    if (cur_player == p1 && p1_balance < (cur_bet-p1_betted + 5)) begin
                                         
-                                    end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted)) begin
+                                    end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted + 5)) begin
                                     
                                     end else if (cur_player == p1) begin
                                         p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
@@ -454,9 +485,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
                                     if (cur_player == p1 && p1_balance < (cur_bet-p1_betted)) begin
-                                        // do nothing
+                                        
                                     end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted)) begin
-                                        // do nothing
+                                        
                                     end else begin
                                         if (cur_player == p1) begin
                                             p1_balance = p1_balance - (cur_bet - p1_betted);
@@ -467,6 +498,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                             pot = pot + (cur_bet - p2_betted);
                                             p2_betted = cur_bet;
                                         end
+                                        // distribute pot to winners (or split if tie)
                                         if (tie == 1) begin
                                             p1_balance = p1_balance + pot/2;
                                             p2_balance = p2_balance + pot/2;
@@ -475,6 +507,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                         end else begin
                                             p2_balance = p2_balance + pot;
                                         end
+                                        // move to next game round
                                         pot = 0;
                                         num_game_rounds = num_game_rounds + 1;
                                         cur_player = start_player;
@@ -485,6 +518,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                     end
                                 end else begin
                                     if (cur_player == ~start_player) begin
+                                        // distribute pot to winners (or split if tie)
                                         if (tie == 1) begin
                                             p1_balance = p1_balance + pot/2;
                                             p2_balance = p2_balance + pot/2;
@@ -493,6 +527,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                         end else begin
                                             p2_balance = p2_balance + pot;
                                         end
+                                        // move to next game round
                                         pot = 0;
                                         num_game_rounds = num_game_rounds + 1;
                                         cur_player = start_player;
@@ -502,9 +537,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 end
                             end else if (raise_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1 && p1_balance < (cur_bet-p1_betted)) begin
+                                    if (cur_player == p1 && p1_balance < (cur_bet-p1_betted + 5)) begin
                                         
-                                    end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted)) begin
+                                    end else if (cur_player == p2 && p2_balance < (cur_bet-p2_betted + 5)) begin
                                     
                                     end else if (cur_player == p1) begin
                                         p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
@@ -543,13 +578,14 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
          end
      end
      
+     // determine the card digits that could be displayed on each 7-segment display
      maincard_display card_nums(.clk(clk), .rst(reset_d), .num(current_round), .card1(card1), .card2(card2), .card3(card3), .outdig1(carddisplay_1), .outdig2(carddisplay_2), .outdig3(carddisplay_3), .outdig4(carddisplay_4));
      pcard_display p1_card_nums(.clk(clk), .rst(reset_d), .card1(card4), .card2(card5), .outdig1(p1card_1), .outdig2(p1card_2));
      pcard_display p2_card_nums(.clk(clk), .rst(reset_d), .card1(card6), .card2(card7), .outdig1(p2card_1), .outdig2(p2card_2));
     
-     always @(posedge clk) begin
+    // main display will either display 4 card digits or (current betting round , current player , 2 digits for pot)
+    always @(posedge clk) begin
         if (game_state == playing && current_round != preflop && pubcards_d) begin
-            //dp = ~dp;
             maindisplay_1 = carddisplay_1;
             maindisplay_2 = carddisplay_2;
             maindisplay_3 = carddisplay_3;
@@ -560,9 +596,10 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
             maindisplay_3 = potdig1;
             maindisplay_4 = potdig2;
         end
-     end
-     
-     always @(posedge clk) begin
+    end
+    
+    // peripheral display 1 will either display 2 card digits or p1's balance
+    always @(posedge clk) begin
         if (game_state == playing && p1cards_d) begin
             p1display_1 = p1card_2;
             p1display_2 = p1card_1;
@@ -570,9 +607,10 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
             p1display_1 = p1_balanced2;
             p1display_2 = p1_balanced1;
         end
-     end
-     
-     always @(posedge clk) begin
+    end
+    
+    // peripheral display 2 will either display 2 card digits or p2's balance
+    always @(posedge clk) begin
         if (game_state == playing && p2cards_d) begin
             p2display_1 = p2card_2;
             p2display_2 = p2card_1;
@@ -580,9 +618,10 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
             p2display_1 = p2_balanced2;
             p2display_2 = p2_balanced1;
         end
-     end
-     
-     always @(posedge clk) begin
+    end
+    
+    // draw p1's cards when they first look at their cards
+    always @(posedge clk) begin
         if (reset_d || reset_game) begin
             card4 = 0;
             card5 = 0;
@@ -594,6 +633,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
         end
     end
     
+    //draw p2's cards when they first look at their cards
     always @(posedge clk) begin
        if (reset_d || reset_game) begin
            card6 = 0;
@@ -605,14 +645,13 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
            p2_drawcards = 1;
        end
    end
-                 
+    
+    // anode cycle displayed digits, convert digits to 7-segment codes to display on the 7-segment displays             
     anode_cycle_main large_an_cycle(.clk(clk),.reset(reset_d),.i1(maindisplay_4), .i2(maindisplay_3), .i3(maindisplay_2), .i4(maindisplay_1), .led_output(main_display),.an(an));
     convert_7seg convert_pot(.num(main_display),.seg(seg), .invert(0));
     anode_cycle_p an_cycle_p1(.clk(clk),.reset(reset_d),.i1(p1display_1), .i2(p1display_2), .led_output(p1_display),.an(an2));
     convert_7seg convert_p1(.num(p1_display),.seg(seg2), .invert(1));
     anode_cycle_p an_cycle_p2(.clk(clk),.reset(reset_d),.i1(p2display_1), .i2(p2display_2), .led_output(p2_display),.an(an3));
-    convert_7seg convert_p2(.num(p2_display),.seg(seg3), .invert(1));
-    
-    
+    convert_7seg convert_p2(.num(p2_display),.seg(seg3), .invert(1)); 
     
 endmodule

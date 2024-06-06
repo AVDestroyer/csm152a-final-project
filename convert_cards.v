@@ -1,3 +1,5 @@
+// converts a card number (0-51) to numbers that can be displayed on the 7-segment display
+// each card needs 4 digits as a display (2 for number, 2 for suit)
 module convert_cards(card, dig1, dig2, dig3, dig4);
     input [5:0] card;
     output reg [4:0] dig1;
@@ -14,22 +16,22 @@ module convert_cards(card, dig1, dig2, dig3, dig4);
     always @(*) begin
         case (suit)
             0: begin
-            //D I
+            //Diamonds (D I)
                 dig3 = 0;
                 dig4 = 15; // 7'b1111001;
             end
             1: begin
-            // H E
+            // Hearts (H E)
                 dig3 = 16; //7'b0110111;
                 dig4 = 17; //7'b0110000;
             end
             2: begin
-            // C L
+            // Clubs (C l)
                 dig3 = 18; //7'b0110001;
                 dig4 = 1;
             end
             3: begin
-            // S P
+            // Spades (S P)
                 dig3 = 20; //7'b0100100;
                 dig4 = 21; //7'b0011000;
             end
@@ -37,7 +39,7 @@ module convert_cards(card, dig1, dig2, dig3, dig4);
     end
     always @(*) begin
         case (num)
-            // ace
+            // Ace
             0: begin
                 dig1 = 13; //7'b0001000;
                 dig2 = 24; // blank
@@ -87,17 +89,17 @@ module convert_cards(card, dig1, dig2, dig3, dig4);
                 dig1 = 1;
                 dig2 = 0;
             end
-            // J
+            // Jack
             10: begin
                 dig1 = 10; // 7'b1000111;
                 dig2 = 24;
             end
-            // Q (0 _)
+            // Queen (0 _)
             11: begin
                 dig1 = 0;
                 dig2 = 22; //7'b1110111;
             end
-            // K
+            // King
             12: begin
                 dig1 = 12; //7'b1111000;
                 dig2 = 23; //7'b0110111;

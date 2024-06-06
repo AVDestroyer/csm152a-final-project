@@ -1,3 +1,5 @@
+// https://en.wikipedia.org/wiki/Linear_congruential_generator
+// a,c are primes and m is 256, allowing the period of the LCG to be maximized (m-1)
 module prng(clk, rst, num);
     input clk;
     input rst;

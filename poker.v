@@ -1,3 +1,4 @@
+// determines the winner of two hands (or a tie if one exists)
 module poker(a1, a2, a3, a4, a5, b1, b2, b3, b4, b5, win, tie);
     input [5:0] a1;
     input [5:0] a2;

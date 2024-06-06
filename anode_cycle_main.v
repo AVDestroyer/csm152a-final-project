@@ -1,3 +1,4 @@
+// anode cycling for main 7-segment display
 module anode_cycle_main(clk, reset, i1,i2,i3,i4, led_output, an);
     input clk;
     input reset;

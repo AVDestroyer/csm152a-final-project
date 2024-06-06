@@ -1,3 +1,4 @@
+// converts an input signal into a 1 clock cycle pulse for each positive edge
 module monostable(clk, in, out);
     input clk;
     input in;

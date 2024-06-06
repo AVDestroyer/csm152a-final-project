@@ -1,3 +1,6 @@
+// https://math.stackexchange.com/questions/4757850/expected-number-of-duplicates-when-sampling-with-replacement
+// This doesn't sample with replacement, but assuming that each random number in the card list is independent and uniformly distributed from 0-51 inclusive
+// then the expected number of duplicates in a 7-card sample is 0.6559, which is acceptable
 module shuffle(clk, rst, card1, card2, card3, card4, card5, card6, card7);
 
     input clk;
@@ -42,7 +45,6 @@ module shuffle(clk, rst, card1, card2, card3, card4, card5, card6, card7);
         end
     end
     
-    //https://stackoverflow.com/questions/2394246/algorithm-to-select-a-single-random-combination-of-values
     always @(posedge clk) begin
         for (k = 0; k < 7; k = k + 1) begin
             cards[k] = rng_buf[k] % 52;

@@ -1,3 +1,6 @@
+// cycles through cards given to one player, creating the "digits" needed to represent them on the 7-segment display
+// displayed digits change every second
+// each card needs 4 digits (2 for number, 2 for suit), so we always cycle through 4 displays (4 digits per card means you need to cycle through 2 displays per card, so 4 displays for 2 cards)
 module pcard_display(clk, rst, card1, card2, outdig1, outdig2);
     input clk;
     input rst;

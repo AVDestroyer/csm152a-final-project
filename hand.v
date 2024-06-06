@@ -1,3 +1,4 @@
+// assigns a score to a hand
 module hand(card1, suit1, card2, suit2, card3, suit3, card4, suit4, card5, suit5, score);
     input [3:0] card1; 
     input [3:0] card2; 

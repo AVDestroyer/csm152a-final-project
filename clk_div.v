@@ -1,8 +1,5 @@
-// very low Duty Cycle Clock Division
 // Triggered on positive edge of input clock -- it should start at 1
-// reset should be 1 initially
-// halftime is number of clock cycles for 1/2 cycle
-
+// creates a 1 clock cycle pulse with a larger period
 module clk_div(clk_in,clk_out,rst,period);
     input clk_in;
     output reg clk_out = 1;

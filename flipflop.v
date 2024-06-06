@@ -1,3 +1,4 @@
+//t flip flop
 module flipflop(rst, in, out);
 
     input rst;

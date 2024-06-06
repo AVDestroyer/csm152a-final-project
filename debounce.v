@@ -1,3 +1,4 @@
+// 11 bit debouncing
 module debounce(clk, in, out);
     input clk;
     input in;
@@ -10,6 +11,7 @@ module debounce(clk, in, out);
         deb = 11'b0;
     end
     
+    // code originally written by me, input to chatGPT to improve it (which recommended to use nonblocking assignment and simplified syntax in the if statements)
     always @(posedge clk) begin      
         deb[10:0] <= {in, deb[10:1]};
     end
