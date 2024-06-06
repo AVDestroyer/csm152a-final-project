@@ -26,7 +26,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     wire pubcards_d;
     wire p1cards_d;
     wire p2cards_d;
-    
+    wire [0:0] win;
+    wire [0:0] win;
+
     debounce reset_debounce(.clk(clk),.in(btnR),.out(reset_d));
     debounce cashout_debounce(.clk(clk),.in(sw[0]),.out(cashout_d));
     debounce fold_debounce(.clk(clk),.in(btnU),.out(fold_d));
@@ -40,6 +42,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     debounce pubcards_debounce(.clk(clk),.in(sw[1]),.out(pubcards_d));
     debounce p1cards_debounce(.clk(clk),.in(sw[2]),.out(p1cards_d));
     debounce p2cards_debounce(.clk(clk),.in(sw[3]),.out(p2cards_d));
+    poker game (.a1(card1), .a2(card2), .a3(card3), .a4(card4), .a5(card5), .b1(card1), .b2(card2), .b3(card3), .b4(card6), .b5(card7), .win(win), .tie(tie));
 
     parameter playing = 2'b00;
     parameter cashout = 2'b01;
@@ -420,7 +423,14 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                         pot = pot + (cur_bet - p2_betted);
                                         p2_betted = cur_bet;
                                     end
-                                    p1_balance = p1_balance + pot;
+				    if (tie == 1) begin
+                                        p1_balance = p1_balance + pot/2;
+                                        p2_balance = p2_balance + pot/2;
+				    end else if (win == 1) begin
+                                        p1_balance = p1_balance + pot;
+				    end else begin
+                                        p2_balance = p2_balance + pot;
+			            end
                                     pot = 0;
                                     num_game_rounds = num_game_rounds + 1;
                                     cur_player = start_player;
@@ -430,7 +440,14 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                     next_round = preflop;
                                 end else begin
                                     if (cur_player == ~start_player) begin
-                                        p1_balance = p1_balance + pot;
+					if (tie == 1) begin
+                                            p1_balance = p1_balance + pot/2;
+                                            p2_balance = p2_balance + pot/2;
+					end else if (win == 1) begin
+                                            p1_balance = p1_balance + pot;
+					end else begin
+                                            p2_balance = p2_balance + pot;
+					end
                                         pot = 0;
                                         num_game_rounds = num_game_rounds + 1;
                                         cur_player = start_player;
