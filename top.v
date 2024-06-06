@@ -42,7 +42,6 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     debounce pubcards_debounce(.clk(clk),.in(sw[1]),.out(pubcards_d));
     debounce p1cards_debounce(.clk(clk),.in(sw[2]),.out(p1cards_d));
     debounce p2cards_debounce(.clk(clk),.in(sw[3]),.out(p2cards_d));
-    poker game (.a1(card1), .a2(card2), .a3(card3), .a4(card4), .a5(card5), .b1(card1), .b2(card2), .b3(card3), .b4(card6), .b5(card7), .win(win), .tie(tie));
 
     parameter playing = 2'b00;
     parameter cashout = 2'b01;
@@ -107,7 +106,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     reg [5:0] card7 = 0;
 
     shuffle shuf_cards(.clk(clk), .rst(reset_d), .card1(c1), .card2(c2), .card3(c3), .card4(c4), .card5(c5), .card6(c6), .card7(c7));
-    
+    poker game (.a1(card1), .a2(card2), .a3(card3), .a4(card4), .a5(card5), .b1(card1), .b2(card2), .b3(card3), .b4(card6), .b5(card7), .win(win), .tie(tie));
     wire [4:0] carddisplay_1;
     wire [4:0] carddisplay_2;
     wire [4:0] carddisplay_3;
@@ -209,12 +208,15 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                     p2_balance = p2_balance + pot;
                                 else
                                     p1_balance = p1_balance + pot;
-                                pot = 0;
+                                pot = 1;
                                 cur_player = ~start_player;
                                 num_game_rounds = num_game_rounds + 1;
-                                cur_bet = 0;
-                                p1_betted = 0;
-                                p2_betted = 0;
+                                cur_bet = 1;
+				if (cur_player == p1) begin
+				    p1_betted = 1; p2_betted = 0;
+				end else begin
+				    p2_betted = 1; p1_betted = 1;
+				end
                                 next_round = preflop; 
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
