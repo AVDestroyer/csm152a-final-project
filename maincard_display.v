@@ -23,9 +23,9 @@ module maincard_display(clk, rst, num, card1, card2, card3, outdig1, outdig2, ou
     wire [4:0] card3dig3;
     wire [4:0] card3dig4;
     
-    convert_cards c1main(.clk(clk),.card(card1),.dig1(card1dig1),.dig2(card1dig2),.dig3(card1dig3),.dig4(card1dig4));
-    convert_cards c2main(.clk(clk),.card(card2),.dig1(card2dig1),.dig2(card2dig2),.dig3(card2dig3),.dig4(card2dig4));
-    convert_cards c3main(.clk(clk),.card(card3),.dig1(card3dig1),.dig2(card3dig2),.dig3(card3dig3),.dig4(card3dig4));
+    convert_cards c1main(.card(card1),.dig1(card1dig1),.dig2(card1dig2),.dig3(card1dig3),.dig4(card1dig4));
+    convert_cards c2main(.card(card2),.dig1(card2dig1),.dig2(card2dig2),.dig3(card2dig3),.dig4(card2dig4));
+    convert_cards c3main(.card(card3),.dig1(card3dig1),.dig2(card3dig2),.dig3(card3dig3),.dig4(card3dig4));
     
     parameter integer PERIOD = 100000000;
     wire clk_sec;
@@ -63,6 +63,12 @@ module maincard_display(clk, rst, num, card1, card2, card3, outdig1, outdig2, ou
                 outdig2 = card3dig2;
                 outdig3 = card3dig3;
                 outdig4 = card3dig4;
+            end
+            default: begin
+                outdig1 = 0;
+                outdig2 = 0;
+                outdig3 = 0;
+                outdig4 = 0;
             end
         endcase
     end

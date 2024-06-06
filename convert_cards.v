@@ -1,5 +1,4 @@
-module convert_cards(clk, card, dig1, dig2, dig3, dig4);
-    input clk;
+module convert_cards(card, dig1, dig2, dig3, dig4);
     input [5:0] card;
     output reg [4:0] dig1;
     output reg [4:0] dig2;
@@ -102,6 +101,10 @@ module convert_cards(clk, card, dig1, dig2, dig3, dig4);
             12: begin
                 dig1 = 12; //7'b1111000;
                 dig2 = 23; //7'b0110111;
+            end
+            default: begin
+                dig1 = 0;
+                dig2 = 0;
             end
         endcase
     end

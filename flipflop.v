@@ -1,6 +1,5 @@
-module flipflop(clk, rst, in, out);
+module flipflop(rst, in, out);
 
-    input clk;
     input rst;
     input in;
     output reg out = 0;
