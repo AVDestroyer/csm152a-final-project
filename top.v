@@ -27,7 +27,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     wire p1cards_d;
     wire p2cards_d;
     wire [0:0] win;
-    wire [0:0] win;
+    wire [0:0] tie;
 
     debounce reset_debounce(.clk(clk),.in(btnR),.out(reset_d));
     debounce cashout_debounce(.clk(clk),.in(sw[0]),.out(cashout_d));
