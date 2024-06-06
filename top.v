@@ -126,6 +126,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     reg [4:0] p2display_1 = 0;
     reg [4:0] p2display_2 = 0;
     
+    reg p1_drawcards = 0;
+    reg p2_drawcards = 0;
+    
     always @(posedge clk) begin
         counter = counter + 1;
         if (counter >= 53)
@@ -180,10 +183,6 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                 card1 = c1;
                 card2 = c2;
                 card3 = c3;
-                card4 = c4;
-                card5 = c5;
-                card6 = c6;
-                card7 = c7;
             end
             current_round = next_round;
         end
@@ -504,30 +503,54 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
         end else begin
             maindisplay_1 = current_round;
             maindisplay_2 = cur_player;
-            maindisplay_3 = potdig2;
-            maindisplay_4 = potdig1;
+            maindisplay_3 = potdig1;
+            maindisplay_4 = potdig2;
         end
      end
      
      always @(posedge clk) begin
         if (game_state == playing && p1cards_d) begin
-            p1display_1 = p1card_1;
-            p1display_2 = p1card_2;
+            p1display_1 = p1card_2;
+            p1display_2 = p1card_1;
         end else begin
-            p1display_1 = p1_balanced1;
-            p1display_2 = p1_balanced2;
+            p1display_1 = p1_balanced2;
+            p1display_2 = p1_balanced1;
         end
      end
      
      always @(posedge clk) begin
         if (game_state == playing && p2cards_d) begin
-            p2display_1 = p2card_1;
-            p2display_2 = p2card_2;
+            p2display_1 = p2card_2;
+            p2display_2 = p2card_1;
         end else begin
-            p2display_1 = p2_balanced1;
-            p2display_2 = p2_balanced2;
+            p2display_1 = p2_balanced2;
+            p2display_2 = p2_balanced1;
         end
-     end  
+     end
+     
+     always @(posedge clk) begin
+        if (reset_d || reset_game) begin
+            card4 = 0;
+            card5 = 0;
+            p1_drawcards = 0;
+        end else if (game_state == playing && p1cards_d && (!p1_drawcards)) begin
+            card4 = c4;
+            card5 = c5;
+            p1_drawcards = 1;
+        end
+    end
+    
+    always @(posedge clk) begin
+       if (reset_d || reset_game) begin
+           card6 = 0;
+           card7 = 0;
+           p2_drawcards = 0;
+       end else if (game_state == playing && p2cards_d && (!p2_drawcards)) begin
+           card6 = c6;
+           card7 = c7;
+           p2_drawcards = 1;
+       end
+   end
                  
     anode_cycle_main large_an_cycle(.clk(clk),.reset(reset_d),.i1(maindisplay_4), .i2(maindisplay_3), .i3(maindisplay_2), .i4(maindisplay_1), .led_output(main_display),.an(an));
     convert_7seg convert_pot(.num(main_display),.seg(seg), .invert(0));
