@@ -1,17 +1,14 @@
 module top_module ();
-	reg clk=0;
-	always #5 clk = ~clk;  // Create clock with period=10
-	initial `probe_start;   // Start the timing diagram
-
-	`probe(clk);        // Probe signal "clk"
+    reg clk=0;
+    always #5 clk = ~clk;  // Create clock with period=10
 
 	// A testbench
     reg [5:0] g1 = 1; reg [5:0] g2 = 4; reg [5:0] g3 = 22; reg [5:0] g4 = 13; reg [5:0] g5 = 49;
     reg [5:0] g6 = 16; reg [5:0] g7 = 7; reg [5:0] g8 = 42; reg [5:0] g9 = 33; reg [5:0] g10 = 31;
-	initial begin
+    initial begin
         $display ("Hello world! The current time is ( ps)", $time);
-		#50 $finish;            // Quit the simulation
-	end
+	#50 $finish;            // Quit the simulation
+    end
     
     wire [0:0] win;
     wire [0:0] tie; 
