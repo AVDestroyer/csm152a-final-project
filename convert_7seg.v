@@ -32,6 +32,7 @@ module convert_7seg(num, seg, invert);
                 default: code = 7'b1111111; //blank
              endcase
              // this line written by chatGPT
+             // https://chatgpt.com/c/b16b53d4-5bc2-4f21-b8b6-15c348a8dcbf
              seg = code ^ {7{invert}};
         end
 endmodule

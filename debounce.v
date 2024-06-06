@@ -12,6 +12,7 @@ module debounce(clk, in, out);
     end
     
     // code originally written by me, input to chatGPT to improve it (which recommended to use nonblocking assignment and simplified syntax in the if statements)
+    // https://chatgpt.com/share/0f2b1f74-a444-434d-8c46-18f8e80f8095
     always @(posedge clk) begin      
         deb[10:0] <= {in, deb[10:1]};
     end
