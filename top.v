@@ -220,7 +220,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 next_round = preflop; 
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < (cur_bet-p1_betted)) begin
+				        ;
+				    end else if (cur_player == p2 and p2_balance < (cur_bet-p2_betted)) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance - (cur_bet - p1_betted);
                                         pot = pot + (cur_bet - p1_betted);
                                         p1_betted = cur_bet;
@@ -243,7 +247,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 end
                             end else if (raise_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < (cur_bet-p1_betted) + 5) begin
+				        ;
+				    end else if (cur_player == p2 and p2_balance < (cur_bet-p2_betted) + 5) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
                                         pot = pot + (cur_bet - p1_betted) + 5;
                                         cur_bet = cur_bet + 5;
@@ -255,7 +263,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                         p2_betted = cur_bet;
                                     end
                                 end else begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < 5) begin
+					;
+				    end else if (cur_player == p2 and p2_balance < 5) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance - 5;
                                         pot = pot + 5;
                                         cur_bet = 5;
@@ -289,7 +301,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 next_round = preflop; 
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < (cur_bet-p1_betted)) begin
+				        ;
+				    end else if (cur_player == p2 and p2_balance < (cur_bet-p2_betted)) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance - (cur_bet - p1_betted);
                                         pot = pot + (cur_bet - p1_betted);
                                         p1_betted = cur_bet;
@@ -312,7 +328,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 end
                             end else if (raise_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < (cur_bet-p1_betted) + 5) begin
+				        ;
+				    end else if (cur_player == p2 and p2_balance < (cur_bet-p2_betted) + 5) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
                                         pot = pot + (cur_bet - p1_betted) + 5;
                                         cur_bet = cur_bet + 5;
@@ -324,7 +344,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                         p2_betted = cur_bet;
                                     end
                                 end else begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < 5) begin
+					;
+				    end else if (cur_player == p2 and p2_balance < 5) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance - 5;
                                         pot = pot + 5;
                                         cur_bet = 5;
@@ -358,7 +382,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 next_round = preflop; 
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < (cur_bet-p1_betted)) begin
+				        ;
+				    end else if (cur_player == p2 and p2_balance < (cur_bet-p2_betted)) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance - (cur_bet - p1_betted);
                                         pot = pot + (cur_bet - p1_betted);
                                         p1_betted = cur_bet;
@@ -381,7 +409,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 end
                             end else if (raise_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < (cur_bet-p1_betted) + 5) begin
+				        ;
+				    end else if (cur_player == p2 and p2_balance < (cur_bet-p2_betted) + 5) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
                                         pot = pot + (cur_bet - p1_betted) + 5;
                                         cur_bet = cur_bet + 5;
@@ -393,7 +425,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                         p2_betted = cur_bet;
                                     end
                                 end else begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < 5) begin
+					;
+				    end else if (cur_player == p2 and p2_balance < 5) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance - 5;
                                         pot = pot + 5;
                                         cur_bet = 5;
@@ -416,17 +452,22 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                     p1_balance = p1_balance + pot;
                                 pot = 1;
                                 cur_bet = 1;
+                                cur_player = start_player;
 				if (cur_player == p1) begin
 				    p1_betted = 1; p2_betted = 0;
 				end else begin
 				    p2_betted = 1; p1_betted = 1;
 				end
                                 next_round = preflop; 
-                                cur_player = start_player;
                                 num_game_rounds = num_game_rounds + 1;
                                 next_round = preflop; 
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
+				    if (cur_player == p1 and p1_balance < (cur_bet-p1_betted)) begin
+				        ;
+				    end else if (cur_player == p2 and p2_balance < (cur_bet-p2_betted)) begin
+					; 
+				    end else if (cur_player == p1 and p1_balance < (cur_bet-p1_betted)) begin
                                     if (cur_player == p1) begin
                                         p1_balance = p1_balance - (cur_bet - p1_betted);
                                         pot = pot + (cur_bet - p1_betted);
@@ -470,7 +511,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 end
                             end else if (raise_p) begin
                                 if (cur_bet > 0) begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < (cur_bet-p1_betted) + 5) begin
+				        ;
+				    end else if (cur_player == p2 and p2_balance < (cur_bet-p2_betted) + 5) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance -((cur_bet - p1_betted) + 5);
                                         pot = pot + (cur_bet - p1_betted) + 5;
                                         cur_bet = cur_bet + 5;
@@ -482,7 +527,11 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                         p2_betted = cur_bet;
                                     end
                                 end else begin
-                                    if (cur_player == p1) begin
+				    if (cur_player == p1 and p1_balance < 5) begin
+					;
+				    end else if (cur_player == p2 and p2_balance < 5) begin
+					;
+				    end else if (cur_player == p1) begin
                                         p1_balance = p1_balance - 5;
                                         pot = pot + 5;
                                         cur_bet = 5;
