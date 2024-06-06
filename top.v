@@ -209,7 +209,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                 else
                                     p1_balance = p1_balance + pot;
                                 pot = 1;
-                                cur_player = ~start_player;
+                                cur_player = start_player;
                                 num_game_rounds = num_game_rounds + 1;
                                 cur_bet = 1;
 				if (cur_player == p1) begin
@@ -276,12 +276,16 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                     p2_balance = p2_balance + pot;
                                 else
                                     p1_balance = p1_balance + pot;
-                                pot = 0;
-                                cur_player = ~start_player;
+                                pot = 1;
+                                cur_player = start_player;
                                 num_game_rounds = num_game_rounds + 1;
-                                cur_bet = 0;
-                                p1_betted = 0;
-                                p2_betted = 0;
+                                cur_bet = 1;
+				if (cur_player == p1) begin
+				    p1_betted = 1; p2_betted = 0;
+				end else begin
+				    p2_betted = 1; p1_betted = 1;
+				end
+                                next_round = preflop; 
                                 next_round = preflop; 
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
@@ -341,12 +345,16 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                     p2_balance = p2_balance + pot;
                                 else
                                     p1_balance = p1_balance + pot;
-                                pot = 0;
-                                cur_player = ~start_player;
+                                pot = 1;
+                                cur_player = start_player;
                                 num_game_rounds = num_game_rounds + 1;
-                                cur_bet = 0;
-                                p1_betted = 0;
-                                p2_betted = 0;
+                                cur_bet = 1;
+				if (cur_player == p1) begin
+				    p1_betted = 1; p2_betted = 0;
+				end else begin
+				    p2_betted = 1; p1_betted = 1;
+				end
+                                next_round = preflop; 
                                 next_round = preflop; 
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin
@@ -406,12 +414,16 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
                                     p2_balance = p2_balance + pot;
                                 else
                                     p1_balance = p1_balance + pot;
-                                pot = 0;
-                                cur_player = ~start_player;
+                                pot = 1;
+                                cur_bet = 1;
+				if (cur_player == p1) begin
+				    p1_betted = 1; p2_betted = 0;
+				end else begin
+				    p2_betted = 1; p1_betted = 1;
+				end
+                                next_round = preflop; 
+                                cur_player = start_player;
                                 num_game_rounds = num_game_rounds + 1;
-                                cur_bet = 0;
-                                p1_betted = 0;
-                                p2_betted = 0;
                                 next_round = preflop; 
                             end else if (call_p) begin
                                 if (cur_bet > 0) begin

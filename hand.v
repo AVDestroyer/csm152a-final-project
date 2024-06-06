@@ -9,16 +9,16 @@ module hand(card1, suit1, card2, suit2, card3, suit3, card4, suit4, card5, suit5
     input [1:0] suit3; 
     input [1:0] suit4;
     input [1:0] suit5;
-    output [0:0] flush;
-    output [0:0] pair;
-    output [0:0] three;
-    output [0:0] four;
-    output [0:0] royal;
-    output [0:0] twopair;
-    output [0:0] house;
-    output [0:0] straight;
-    output [0:0] straightflush;
-    output [3:0] highestCard;
+    wire [0:0] flush;
+    wire [0:0] pair;
+    wire [0:0] three;
+    wire [0:0] four;
+    wire [0:0] royal;
+    wire [0:0] twopair;
+    wire [0:0] house;
+    wire [0:0] straight;
+    wire [0:0] straightflush;
+    wire [3:0] highestCard;
     output [14:0] score;
     
     
