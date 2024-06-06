@@ -2,10 +2,10 @@ module anode_cycle_p(clk, reset, i1,i2, led_output, an);
     input clk;
     input reset;
 	
-    input [3:0] i1;
-    input [3:0] i2;
+    input [4:0] i1;
+    input [4:0] i2;
 	
-    output reg [3:0] led_output;
+    output reg [4:0] led_output;
     output reg [0:0] an = 0;
     
 	

@@ -1,7 +1,7 @@
 module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3);
     input clk;
     input btnR;
-    input [0:0] sw;
+    input [3:0] sw;
     input btnU;
     input btnL;
     input btnC;
@@ -12,7 +12,7 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     output wire [0:0] an2;
     output wire [6:0] seg3;
     output wire [0:0] an3;
-    
+        
     wire reset_d;
     wire cashout_d;
     wire fold_d;
@@ -23,6 +23,9 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     wire raise_p;
     wire freeze_d;
     wire freeze_ff;
+    wire pubcards_d;
+    wire p1cards_d;
+    wire p2cards_d;
     
     debounce reset_debounce(.clk(clk),.in(btnR),.out(reset_d));
     debounce cashout_debounce(.clk(clk),.in(sw[0]),.out(cashout_d));
@@ -34,8 +37,10 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     monostable raisebet_pulse(.clk(clk),.in(raise_d),.out(raise_p));
     debounce freeze_debounce(.clk(clk),.in(btnD),.out(freeze_d));
     flipflop freezeff(.clk(clk),.rst(reset_d),.in(freeze_d),.out(freeze_ff));
+    debounce pubcards_debounce(.clk(clk),.in(sw[1]),.out(pubcards_d));
+    debounce p1cards_debounce(.clk(clk),.in(sw[2]),.out(p1cards_d));
+    debounce p2cards_debounce(.clk(clk),.in(sw[3]),.out(p2cards_d));
 
-    
     parameter playing = 2'b00;
     parameter cashout = 2'b01;
     parameter loading = 2'b10;
@@ -50,17 +55,8 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     parameter flop = 3'b1;
     parameter turn = 3'b10;
     parameter river = 3'b11;
-    parameter tallyup = 3'b100;
-    reg [2:0] current_round = preflop;
-    reg [2:0] next_round = preflop;
-        
-    wire [7:0] rngout;
-    reg [7:0] random_num;
-    
-    wire clk_sec;
-    parameter integer STOPWATCHPERIOD = 114913817;
-    
-    clk_div sec_div(.clk_in(clk),.clk_out(clk_sec),.rst(reset_d),.period(STOPWATCHPERIOD));
+    reg [1:0] current_round = preflop;
+    reg [1:0] next_round = preflop;
     
     reg cur_player = 0;
     parameter p1 = 0;
@@ -69,28 +65,63 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
     wire start_player = num_game_rounds % 2;
     reg [6:0] p1_balance = 49;
     reg [6:0] p2_balance = 49;
-    wire [3:0] p1_balanced1;
-    wire [3:0] p1_balanced2;
-    wire [3:0] p2_balanced1;
-    wire [3:0] p2_balanced2;
+    wire [4:0] p1_balanced1;
+    wire [4:0] p1_balanced2;
+    wire [4:0] p2_balanced1;
+    wire [4:0] p2_balanced2;
     assign p1_balanced1 = p1_balance / 10;
     assign p1_balanced2 = p1_balance % 10;
     assign p2_balanced1 = p2_balance / 10;
     assign p2_balanced2 = p2_balance % 10;
     reg [6:0] pot = 0;
-    wire [3:0] potdig1;
-    wire [3:0] potdig2;
+    wire [4:0] potdig1;
+    wire [4:0] potdig2;
     assign potdig1 = pot / 10;
     assign potdig2 = pot % 10;
     reg [6:0] cur_bet = 0;
     reg [6:0] p1_betted = 0;
     reg [6:0] p2_betted = 0;
     
-    wire [3:0] pot_display;
-    wire [3:0] p1_balance_display;
-    wire [3:0] p2_balance_display;
+    wire [4:0] main_display;
+    wire [4:0] p1_display;
+    wire [4:0] p2_display;
     
     reg reset_game = 0;
+    
+    wire [5:0] c1;
+    wire [5:0] c2;
+    wire [5:0] c3;
+    wire [5:0] c4;
+    wire [5:0] c5;
+    wire [5:0] c6;
+    wire [5:0] c7;
+    reg [5:0] card1 = 0;
+    reg [5:0] card2 = 0;
+    reg [5:0] card3 = 0;
+    reg [5:0] card4 = 0;
+    reg [5:0] card5 = 0;
+    reg [5:0] card6 = 0;
+    reg [5:0] card7 = 0;
+
+    shuffle shuf_cards(.clk(clk), .rst(reset_d), .card1(c1), .card2(c2), .card3(c3), .card4(c4), .card5(c5), .card6(c6), .card7(c7));
+    
+    wire [4:0] carddisplay_1;
+    wire [4:0] carddisplay_2;
+    wire [4:0] carddisplay_3;
+    wire [4:0] carddisplay_4;
+    wire [4:0] p1card_1;
+    wire [4:0] p1card_2;
+    wire [4:0] p2card_1;
+    wire [4:0] p2card_2;   
+    
+    reg [4:0] maindisplay_1 = 0;
+    reg [4:0] maindisplay_2 = 0;
+    reg [4:0] maindisplay_3 = 0;
+    reg [4:0] maindisplay_4 = 0;
+    reg [4:0] p1display_1 = 0;
+    reg [4:0] p1display_2 = 0;
+    reg [4:0] p2display_1 = 0;
+    reg [4:0] p2display_2 = 0;
     
     always @(posedge clk) begin
         counter = counter + 1;
@@ -142,6 +173,15 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
         end
         else begin
             game_state = next_game_state;
+            if (current_round == preflop && next_round == flop) begin
+                card1 = c1;
+                card2 = c2;
+                card3 = c3;
+                card4 = c4;
+                card5 = c5;
+                card6 = c6;
+                card7 = c7;
+            end
             current_round = next_round;
         end
     end
@@ -432,18 +472,53 @@ module top (clk, btnR, sw, btnU, btnL, btnC, btnD, seg, an, seg2, an2, seg3, an3
              endcase
          end
      end
-                
-    anode_cycle_main large_an_cycle(.clk(clk),.reset(reset_d),.i1(current_round), .i2(cur_player), .i3(potdig2), .i4(potdig1), .led_output(pot_display),.an(an));
-    convert_7seg convert_pot(.num(pot_display),.seg(seg), .invert(0));
-    anode_cycle_p an_cycle_p1(.clk(clk),.reset(reset_d),.i1(p1_balanced1), .i2(p1_balanced2), .led_output(p1_balance_display),.an(an2));
-    convert_7seg convert_p1(.num(p1_balance_display),.seg(seg2), .invert(1));
-    anode_cycle_p an_cycle_p2(.clk(clk),.reset(reset_d),.i1(p2_balanced1), .i2(p2_balanced2), .led_output(p2_balance_display),.an(an3));
-    convert_7seg convert_p2(.num(p2_balance_display),.seg(seg3), .invert(1));
+     
+     maincard_display card_nums(.clk(clk), .rst(reset_d), .num(current_round), .card1(card1), .card2(card2), .card3(card3), .outdig1(carddisplay_1), .outdig2(carddisplay_2), .outdig3(carddisplay_3), .outdig4(carddisplay_4));
+     pcard_display p1_card_nums(.clk(clk), .rst(reset_d), .card1(card4), .card2(card5), .outdig1(p1card_1), .outdig2(p1card_2));
+     pcard_display p2_card_nums(.clk(clk), .rst(reset_d), .card1(card6), .card2(card7), .outdig1(p2card_1), .outdig2(p2card_2));
     
-    prng rng(.clk(clk),.rst(reset_d),.num(rngout));
+     always @(posedge clk) begin
+        if (game_state == playing && current_round != preflop && pubcards_d) begin
+            //dp = ~dp;
+            maindisplay_1 = carddisplay_1;
+            maindisplay_2 = carddisplay_2;
+            maindisplay_3 = carddisplay_3;
+            maindisplay_4 = carddisplay_4;
+        end else begin
+            maindisplay_1 = current_round;
+            maindisplay_2 = cur_player;
+            maindisplay_3 = potdig2;
+            maindisplay_4 = potdig1;
+        end
+     end
+     
+     always @(posedge clk) begin
+        if (game_state == playing && p1cards_d) begin
+            p1display_1 = p1card_1;
+            p1display_2 = p1card_2;
+        end else begin
+            p1display_1 = p1_balanced1;
+            p1display_2 = p1_balanced2;
+        end
+     end
+     
+     always @(posedge clk) begin
+        if (game_state == playing && p2cards_d) begin
+            p2display_1 = p2card_1;
+            p2display_2 = p2card_2;
+        end else begin
+            p2display_1 = p2_balanced1;
+            p2display_2 = p2_balanced2;
+        end
+     end  
+                 
+    anode_cycle_main large_an_cycle(.clk(clk),.reset(reset_d),.i1(maindisplay_4), .i2(maindisplay_3), .i3(maindisplay_2), .i4(maindisplay_1), .led_output(main_display),.an(an));
+    convert_7seg convert_pot(.num(main_display),.seg(seg), .invert(0));
+    anode_cycle_p an_cycle_p1(.clk(clk),.reset(reset_d),.i1(p1display_1), .i2(p1display_2), .led_output(p1_display),.an(an2));
+    convert_7seg convert_p1(.num(p1_display),.seg(seg2), .invert(1));
+    anode_cycle_p an_cycle_p2(.clk(clk),.reset(reset_d),.i1(p2display_1), .i2(p2display_2), .led_output(p2_display),.an(an3));
+    convert_7seg convert_p2(.num(p2_display),.seg(seg3), .invert(1));
     
-    always @(posedge clk_sec)
-        random_num = rngout;
     
     
 endmodule

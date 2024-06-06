@@ -2,12 +2,12 @@ module anode_cycle_main(clk, reset, i1,i2,i3,i4, led_output, an);
     input clk;
     input reset;
 	
-    input [3:0] i1;
-    input [3:0] i2;
-    input [3:0] i3;
-    input [3:0] i4;
+    input [4:0] i1;
+    input [4:0] i2;
+    input [4:0] i3;
+    input [4:0] i4;
 	
-    output reg [3:0] led_output;
+    output reg [4:0] led_output;
     output reg [3:0] an = 0;
     
     wire clk_dv;

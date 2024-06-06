@@ -3,15 +3,13 @@ module prng(clk, rst, num);
     input rst;
     output reg [7:0] num;
     
-    wire [7:0] init_seed;
+    reg [7:0] init_seed = 251;
     
     parameter a = 233;
     parameter c = 197;
-    
-    garo garo(.clk(clk),.rnd(init_seed));
-    
+        
     initial begin
-        num <= init_seed;
+        num = init_seed;
     end
     
     always @(posedge clk or posedge rst) begin

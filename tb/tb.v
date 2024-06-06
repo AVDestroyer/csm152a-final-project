@@ -1,3 +1,5 @@
+`timescale 1ns/1ps
+
 module tb();
     reg clk = 1;
     reg btnR = 0;
@@ -12,8 +14,24 @@ module tb();
     wire [3:0] an;
     wire [0:0] an2;
     wire [0:0] an3;
+    wire [0:0] dp;
     always begin 
        #5 clk = ~clk;
     end
-    top UUT(.clk(clk),.btnR(btnR), .sw(sw), .btnU(btnU), .btnL(btnL), .btnC(btnC),.btnD(btnD),.seg(seg),.an(an),.an2(an2),.seg2(seg2),.an3(an3),.seg3(seg3));
+    
+    initial begin
+        #20000000
+        btnL = 1;
+        #20000000
+        btnL = 0;
+        #20000000
+        btnL = 1;
+        #20000000
+        btnL = 0;
+        #20000000
+        sw[1] = 1;
+        
+    end
+        
+    top UUT(.clk(clk),.btnR(btnR), .sw(sw), .btnU(btnU), .btnL(btnL), .btnC(btnC),.btnD(btnD),.seg(seg),.an(an),.seg2(seg),.an2(an2),.seg3(seg3),.an3(an3));
 endmodule
